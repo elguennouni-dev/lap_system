@@ -18,8 +18,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired private UserRepo userRepo;
+    private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+
     public LoginResponse login(LoginRequest request) {
         LoginResponse response = new LoginResponse();
 
@@ -40,14 +41,11 @@ public class AuthService {
         }
 
         if (user.getRole() == Role.ADMINISTRATEUR) {
-            // OTP
-
             response.setLoggedIn(false);
             response.setOtpRequired(true);
             response.setMessage("OTP Verification Required");
-
             response.setUserDto(null);
-        }else {
+        } else {
             response.setLoggedIn(true);
             response.setOtpRequired(false);
             response.setMessage("Login Successful");
@@ -59,12 +57,8 @@ public class AuthService {
             userDto.setRole(user.getRole());
 
             response.setUserDto(userDto);
-
         }
 
         return response;
-
-
     }
-
 }

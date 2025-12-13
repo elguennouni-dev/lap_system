@@ -12,7 +12,7 @@ public class TaskService {
     @Autowired private TaskRepo taskRepo;
 
     public List<Task> getTasksByUser(User user) {
-        return taskRepo.findTasksByUser(user);
+        return taskRepo.findByAssignee(user);
     }
 
     public Task createTask(Task task) {
