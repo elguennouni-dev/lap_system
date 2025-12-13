@@ -1,6 +1,7 @@
 package com.lap.Order.Management.System.tache;
 
 import com.lap.Order.Management.System.auth.user.User;
+import com.lap.Order.Management.System.commande.Commande;
 import com.lap.Order.Management.System.enums.TaskStatus;
 import com.lap.Order.Management.System.enums.TaskType;
 import jakarta.persistence.*;
@@ -27,6 +28,10 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "assignee_id")
     private User assignee;
+
+    @ManyToOne
+    @JoinColumn(name = "commande_id", nullable = false)
+    private Commande commande;
 
     @CreationTimestamp
     @Column(updatable = false)

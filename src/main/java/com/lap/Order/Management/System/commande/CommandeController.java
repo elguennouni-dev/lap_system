@@ -36,36 +36,4 @@ public class CommandeController {
         commandeService.delete(commandeId);
         return ResponseEntity.ok().build();
     }
-
-    // Workflow Endpoints
-
-    @PutMapping("/{id}/start-design")
-    public ResponseEntity<CommandeDto> startDesign(@PathVariable Long id) {
-        return ResponseEntity.ok(commandeService.startDesign(id));
-    }
-
-    @PutMapping("/{id}/validate-design")
-    public ResponseEntity<CommandeDto> validateDesign(@PathVariable Long id, @RequestParam boolean accepted) {
-        return ResponseEntity.ok(commandeService.validateDesign(id, accepted));
-    }
-
-    @PutMapping("/{id}/complete-impression")
-    public ResponseEntity<CommandeDto> completeImpression(@PathVariable Long id) {
-        return ResponseEntity.ok(commandeService.completeImpression(id));
-    }
-
-    @PutMapping("/{id}/start-livraison")
-    public ResponseEntity<CommandeDto> startLivraison(@PathVariable Long id) {
-        return ResponseEntity.ok(commandeService.startLivraison(id));
-    }
-
-    @PutMapping("/{id}/validate-livraison")
-    public ResponseEntity<CommandeDto> validateLivraison(@PathVariable Long id) {
-        return ResponseEntity.ok(commandeService.validateLivraison(id));
-    }
-
-    @PutMapping("/{id}/move-to-stock")
-    public ResponseEntity<CommandeDto> moveToStock(@PathVariable Long id) {
-        return ResponseEntity.ok(commandeService.moveToStock(id));
-    }
 }

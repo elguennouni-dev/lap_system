@@ -4,6 +4,7 @@ import com.lap.Order.Management.System.auth.dto.NewUserDto;
 import com.lap.Order.Management.System.auth.dto.NewUserResponse;
 import com.lap.Order.Management.System.commande.Commande;
 import com.lap.Order.Management.System.commande.CommandeService;
+import com.lap.Order.Management.System.commande.dto.CommandeDto;
 import com.lap.Order.Management.System.enums.Role;
 import com.lap.Order.Management.System.tache.Task;
 import com.lap.Order.Management.System.tache.TaskService;
@@ -21,7 +22,6 @@ public class UserService {
     @Autowired private ZoneService zoneService;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private TaskService taskService;
-    @Autowired private CommandeService commandeService;
 
     public NewUserResponse newUser(NewUserDto newUserDto) {
 
@@ -60,22 +60,6 @@ public class UserService {
     public void deleteZone(Long id) {
         zoneService.delete(id);
     }
-
-
-
-
-    public Optional<Task> assigneTask(Long userId, Long commandId) {
-        if (userRepo.findById(userId).isEmpty() || commandeService.getCommandeById(commandId).isEmpty()) return Optional.empty();
-        User user = userRepo.findById(userId).get();
-        Commande commande = commandeService.getCommandeById(commandId).get();
-
-        Task task = new Task();
-        task.setAssignee(user);
-        task.set
-
-    }
-
-
 
 
 }
