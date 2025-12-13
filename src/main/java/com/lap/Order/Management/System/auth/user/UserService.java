@@ -34,9 +34,18 @@ public class UserService {
 //            return response;
 //        }
 
-        if (userRepo.findByEmail(newUserDto.getEmail()).isPresent()) {
+//        if (userRepo.findByEmail(newUserDto.getEmail()).isPresent()) {
+//            response.setCreated(false);
+//            response.setMessage("User with this email already exists");
+//            response.setNewUserDto(null);
+//            return response;
+//        }
+
+        if (userRepo.findByEmail(newUserDto.getEmail()).isPresent() ||
+                userRepo.findByUsername(newUserDto.getUsername()).isPresent()) {
+
             response.setCreated(false);
-            response.setMessage("User with this email already exists");
+            response.setMessage("User already exists (Email or Username)");
             response.setNewUserDto(null);
             return response;
         }
