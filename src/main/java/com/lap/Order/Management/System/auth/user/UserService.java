@@ -27,12 +27,12 @@ public class UserService {
     public NewUserResponse newUser(NewUserDto newUserDto) {
         NewUserResponse response = new NewUserResponse();
 
-        if (newUserDto.getRole() == Role.ADMINISTRATEUR) {
-            response.setCreated(false);
-            response.setMessage("God Can't Create Himself Hhhhh");
-            response.setNewUserDto(null);
-            return response;
-        }
+//        if (newUserDto.getRole() == Role.ADMINISTRATEUR) {
+//            response.setCreated(false);
+//            response.setMessage("God Can't Create Himself Hhhhh");
+//            response.setNewUserDto(null);
+//            return response;
+//        }
 
         if (userRepo.findByEmail(newUserDto.getEmail()).isPresent()) {
             response.setCreated(false);
