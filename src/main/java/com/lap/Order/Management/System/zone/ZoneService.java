@@ -1,12 +1,19 @@
 package com.lap.Order.Management.System.zone;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class ZoneService {
 
-    @Autowired ZoneRepo zoneRepo;
+    private final ZoneRepo zoneRepo;
+
+    public List<Zone> getAll() {
+        return zoneRepo.findAll();
+    }
 
     public void create(String zoneName) {
         Zone zone = new Zone();
@@ -17,5 +24,4 @@ public class ZoneService {
     public void delete(Long id) {
         zoneRepo.deleteById(id);
     }
-
 }

@@ -5,26 +5,33 @@ import com.lap.Order.Management.System.auth.user.UserRepo;
 import com.lap.Order.Management.System.commande.Commande;
 import com.lap.Order.Management.System.commande.CommandeRepo;
 import com.lap.Order.Management.System.email.EmailService;
+import com.lap.Order.Management.System.email.EmailTemplateService;
 import com.lap.Order.Management.System.enums.CommandeEtat;
 import com.lap.Order.Management.System.enums.Role;
 import com.lap.Order.Management.System.enums.TaskStatus;
 import com.lap.Order.Management.System.enums.TaskType;
+import com.lap.Order.Management.System.notification.NotificationService;
 import com.lap.Order.Management.System.tache.Task;
 import com.lap.Order.Management.System.tache.TaskRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowService {
 
-    @Autowired private TaskRepo taskRepo;
-    @Autowired private CommandeRepo commandeRepo;
-    @Autowired private UserRepo userRepo;
-    @Autowired private EmailService emailService;
+    private final TaskRepo taskRepo;
+    private final CommandeRepo commandeRepo;
+    private final UserRepo userRepo;
+    private final EmailService emailService;
+    private final EmailTemplateService emailTemplateService;
+    private final NotificationService notificationService;
 
     @Transactional
     public void assignTask(Long commandeId, Long assigneeId, TaskType taskType) {
@@ -37,10 +44,10 @@ public class WorkflowService {
         if (taskType == TaskType.DESIGN && commande.getEtat() != CommandeEtat.CREEE) {
             throw new RuntimeException("Design can only be assigned when Order is CREEE");
         }
-        if (taskType == TaskType.IMPRESSION && commande.getEtat() != CommandeEtat.EN_IMPRESSION) {
+        if (taskType == TaskType.IMPRESSION && commande.getEtat() != CommandeEtat.IMPRESSION_VALIDE) {
             throw new RuntimeException("Impression can only be assigned when Design is Validated");
         }
-        if (taskType == TaskType.LIVRAISON && commande.getEtat() != CommandeEtat.IMPRESSION_VALIDE) {
+        if (taskType == TaskType.LIVRAISON && commande.getEtat() != CommandeEtat.LIVRAISON_VALIDE) {
             throw new RuntimeException("Livraison can only be assigned when Impression is Validated");
         }
 
@@ -51,16 +58,29 @@ public class WorkflowService {
         task.setCommande(commande);
         taskRepo.save(task);
 
+        CommandeEtat oldStatus = commande.getEtat();
         updateCommandeStatusOnAssignment(commande, taskType);
+        CommandeEtat newStatus = commande.getEtat();
 
-        String subject = "🔔 Nouvelle Tâche : " + taskType;
-        String body = "Bonjour " + assignee.getUsername() + ",\n\n" +
-                "Une nouvelle tâche de type " + taskType + " vous a été assignée.\n" +
-                "Commande ID : " + commandeId + "\n" +
-                "Client : " + commande.getNomPropriete() + "\n\n" +
-                "Merci de commencer le travail.";
+        notificationService.notifyOrderStatusChange(
+                commande.getId(),
+                commande.getNomPropriete(),
+                oldStatus,
+                newStatus
+        );
 
-        emailService.sendEmail(assignee.getEmail(), subject, body);
+        String subject = "Nouvelle Tâche : " + taskType;
+        String htmlBody = emailTemplateService.loadTemplate(
+                "task-notification.html",
+                Map.of(
+                        "assigneeName", assignee.getUsername(),
+                        "taskType", taskType.toString(),
+                        "commandeId", commandeId.toString(),
+                        "clientName", commande.getNomPropriete()
+                )
+        );
+
+        emailService.sendHtmlEmail(assignee.getEmail(), subject, htmlBody);
     }
 
     @Transactional
@@ -73,35 +93,95 @@ public class WorkflowService {
         task.setCompletedAt(LocalDateTime.now());
         taskRepo.save(task);
 
-        String subject = "✅ Tâche Terminée : " + task.getType();
-        String body = "L'utilisateur " + task.getAssignee().getUsername() + " a terminé sa tâche.\n" +
-                "Commande ID : " + task.getCommande().getId() + "\n" +
-                "Type : " + task.getType() + "\n\n" +
-                "Veuillez valider le travail sur le système.";
+        String subject = "Tâche Terminée : " + task.getType();
+        String htmlBody = emailTemplateService.loadTemplate(
+                "task-completed.html",
+                Map.of(
+                        "assigneeName", task.getAssignee().getUsername(),
+                        "taskType", task.getType().toString(),
+                        "commandeId", task.getCommande().getId().toString(),
+                        "clientName", task.getCommande().getNomPropriete()
+                )
+        );
 
-        notifyAdmins(subject, body);
+        notifyAdminsHtml(subject, htmlBody);
     }
+
+    @Transactional
+    public void completeTaskSimple(Long taskId) {
+        Task task = taskRepo.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (task.getType() == TaskType.DESIGN) {
+            throw new RuntimeException("Design tasks require file upload.");
+        }
+
+        task.setStatus(TaskStatus.TERMINEE);
+        task.setCompletedAt(LocalDateTime.now());
+        taskRepo.save(task);
+
+        String subject = "Tâche Terminée : " + task.getType();
+        String htmlBody = emailTemplateService.loadTemplate(
+                "task-completed.html",
+                Map.of(
+                        "assigneeName", task.getAssignee().getUsername(),
+                        "taskType", task.getType().toString(),
+                        "commandeId", task.getCommande().getId().toString(),
+                        "clientName", task.getCommande().getNomPropriete()
+                )
+        );
+
+        notifyAdminsHtml(subject, htmlBody);
+    }
+
 
     @Transactional
     public void validateTask(Long taskId, boolean isApproved) {
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        Commande commande = task.getCommande();
+        CommandeEtat oldStatus = commande.getEtat();
+
         if (isApproved) {
             task.setStatus(TaskStatus.VALIDEE);
-            moveCommandeToNextStage(task.getCommande(), task.getType());
+            moveCommandeToNextStage(commande, task.getType());
 
-            emailService.sendEmail(task.getAssignee().getEmail(),
-                    "🎉 Tâche Validée",
-                    "Bravo ! Votre travail pour la commande #" + task.getCommande().getId() + " a été validé.");
+            String subject = "Tâche Validée : " + task.getType();
+            String htmlBody = emailTemplateService.loadTemplate(
+                    "task-validated.html",
+                    Map.of(
+                            "assigneeName", task.getAssignee().getUsername(),
+                            "taskType", task.getType().toString(),
+                            "commandeId", commande.getId().toString(),
+                            "clientName", commande.getNomPropriete()
+                    )
+            );
+
+            emailService.sendHtmlEmail(task.getAssignee().getEmail(), subject, htmlBody);
+
+            notificationService.notifyOrderStatusChange(
+                    commande.getId(),
+                    commande.getNomPropriete(),
+                    oldStatus,
+                    commande.getEtat()
+            );
 
         } else {
             task.setStatus(TaskStatus.REJETEE);
 
-            emailService.sendEmail(task.getAssignee().getEmail(),
-                    "⚠️ Tâche Rejetée",
-                    "Votre travail pour la commande #" + task.getCommande().getId() + " a été rejeté.\n" +
-                            "Veuillez contacter l'administrateur pour plus de détails.");
+            String subject = "Tâche Rejetée : " + task.getType();
+            String htmlBody = emailTemplateService.loadTemplate(
+                    "task-rejected.html",
+                    Map.of(
+                            "assigneeName", task.getAssignee().getUsername(),
+                            "taskType", task.getType().toString(),
+                            "commandeId", commande.getId().toString(),
+                            "clientName", commande.getNomPropriete()
+                    )
+            );
+
+            emailService.sendHtmlEmail(task.getAssignee().getEmail(), subject, htmlBody);
         }
         taskRepo.save(task);
     }
@@ -111,9 +191,19 @@ public class WorkflowService {
         Commande commande = commandeRepo.findById(commandeId)
                 .orElseThrow(() -> new RuntimeException("Commande not found"));
 
+        CommandeEtat oldStatus = commande.getEtat();
+
         if(commande.getEtat() == CommandeEtat.LIVRAISON_VALIDE) {
             commande.setEtat(CommandeEtat.TERMINEE_STOCK);
             commandeRepo.save(commande);
+
+            notificationService.notifyOrderStatusChange(
+                    commande.getId(),
+                    commande.getNomPropriete(),
+                    oldStatus,
+                    commande.getEtat()
+            );
+
         } else {
             throw new RuntimeException("Order must be LIVRAISON_VALIDE to move to stock");
         }
@@ -130,20 +220,20 @@ public class WorkflowService {
 
     private void moveCommandeToNextStage(Commande commande, TaskType type) {
         switch (type) {
-            case DESIGN -> commande.setEtat(CommandeEtat.EN_IMPRESSION);
-            case IMPRESSION -> commande.setEtat(CommandeEtat.IMPRESSION_VALIDE);
+            case DESIGN -> commande.setEtat(CommandeEtat.IMPRESSION_VALIDE);
+            case IMPRESSION -> commande.setEtat(CommandeEtat.LIVRAISON_VALIDE);
             case LIVRAISON -> commande.setEtat(CommandeEtat.LIVRAISON_VALIDE);
         }
         commandeRepo.save(commande);
     }
 
-    private void notifyAdmins(String subject, String body) {
+    private void notifyAdminsHtml(String subject, String htmlBody) {
         List<User> admins = userRepo.findAll().stream()
                 .filter(u -> u.getRole() == Role.ADMINISTRATEUR)
-                .toList();
+                .collect(Collectors.toList());
 
         for (User admin : admins) {
-            emailService.sendEmail(admin.getEmail(), subject, body);
+            emailService.sendHtmlEmail(admin.getEmail(), subject, htmlBody);
         }
     }
 }

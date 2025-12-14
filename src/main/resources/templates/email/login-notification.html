@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification de Connexion à votre Système</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f7; font-family: Arial, sans-serif; }
+        table { border-collapse: collapse; }
+        a { text-decoration: none; }
+        .button { display: inline-block; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f7; font-family: Arial, sans-serif;">
+
+<center>
+    <table width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table width="600" style="background-color: #ffffff; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+                    <!-- HEADER -->
+                    <tr>
+                        <td align="center" style="padding: 25px 30px; background-color: #1a5276;">
+                            <h1 style="margin: 0; font-size: 24px; color: #ffffff;">
+                                {{companyName}}
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- BODY -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h2 style="margin-bottom: 15px; font-size: 22px; color: #333;">
+                                ⚠️ Nouvelle Connexion Détectée
+                            </h2>
+
+                            <p style="font-size: 15px; line-height: 1.6; color: #555;">
+                                Une connexion à votre compte a été enregistrée avec succès.
+                                Si vous êtes à l'origine de cette activité, aucune action n'est requise.
+                            </p>
+
+                            <table width="100%" style="margin-top: 20px; border: 1px solid #e0e0e0;">
+                                <tr>
+                                    <td colspan="2" style="background-color: #f9f9f9; padding: 12px; font-weight: bold;">
+                                        Détails de la Session
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding: 10px; width: 40%; color: #777;">
+                                        <strong>Utilisateur</strong>
+                                    </td>
+                                    <td style="padding: 10px; color: #333;">
+                                        {{username}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding: 10px; color: #777;">
+                                        <strong>Date & Heure (UTC)</strong>
+                                    </td>
+                                    <td style="padding: 10px; color: #333;">
+                                        {{datetime}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td align="center" style="padding: 20px; background-color: #e9ecef;">
+                            <p style="font-size: 11px; color: #777;">
+                                Ceci est un message automatisé. Veuillez ne pas répondre.
+                            </p>
+                            <p style="font-size: 11px; color: #777;">
+                                © {{year}} {{companyName}}. Tous droits réservés.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</center>
+
+</body>
+</html>

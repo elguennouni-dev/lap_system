@@ -30,6 +30,13 @@ public class WorkflowController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PutMapping("/task/{taskId}/complete-simple")
+    public ResponseEntity<Void> completeTaskSimple(@PathVariable Long taskId) {
+        workflowService.completeTaskSimple(taskId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/task/{taskId}/validate")
     public ResponseEntity<Void> validateTask(@PathVariable Long taskId, @RequestParam boolean approved) {
         workflowService.validateTask(taskId, approved);

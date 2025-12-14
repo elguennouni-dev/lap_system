@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Tâche Assignée</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f7; font-family: Arial, sans-serif; }
+        table { border-collapse: collapse; }
+        a { text-decoration: none; }
+        .button { display: inline-block; padding: 10px 20px; border-radius: 4px; font-weight: bold; background-color: #1a5276; color: #ffffff; }
+    </style>
+</head>
+<body>
+<center>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td align="center" style="padding: 25px 30px; background-color: #1a5276; border-top-left-radius: 6px; border-top-right-radius: 6px;">
+                            <h1 style="margin: 0; font-size: 24px; color: #ffffff; font-weight: bold;">
+                                LAP
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h2 style="margin: 0 0 15px 0; font-size: 22px; color: #333333; font-weight: bold;">
+                                🔔 Nouvelle Tâche Assignée
+                            </h2>
+
+                            <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #555555;">
+                                Bonjour {{assigneeName}},<br><br>
+                                Une nouvelle tâche de type <strong>{{taskType}}</strong> vous a été assignée.
+                            </p>
+
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                                <tr>
+                                    <td colspan="2" style="background-color: #f9f9f9; padding: 12px; font-size: 16px; font-weight: bold; color: #333333; border-bottom: 1px solid #e0e0e0;">
+                                        Détails de la Tâche
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; font-size: 14px; color: #777777; width: 40%; border-bottom: 1px solid #f0f0f0;">
+                                        <strong>Commande ID</strong>
+                                    </td>
+                                    <td style="padding: 10px 12px; font-size: 14px; color: #333333; width: 60%; border-bottom: 1px solid #f0f0f0;">
+                                        {{commandeId}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 12px; font-size: 14px; color: #777777;">
+                                        <strong>Client</strong>
+                                    </td>
+                                    <td style="padding: 10px 12px; font-size: 14px; color: #333333;">
+                                        {{clientName}}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #555555;">
+                                Merci de commencer le travail.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 20px 30px; background-color: #e9ecef; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;">
+                            <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #777777;">
+                                Ceci est un message automatisé. Veuillez ne pas répondre à cet e-mail.
+                            </p>
+                            <p style="margin: 5px 0 0 0; font-size: 11px; line-height: 1.5; color: #777777;">
+                                © 2026 LAP. Tous droits réservés.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</center>
+</body>
+</html>
