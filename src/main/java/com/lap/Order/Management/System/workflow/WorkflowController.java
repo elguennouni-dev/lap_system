@@ -3,9 +3,18 @@ package com.lap.Order.Management.System.workflow;
 import com.lap.Order.Management.System.tache.dto.AssignTaskDto;
 import com.lap.Order.Management.System.util.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/workflow")
@@ -48,4 +57,27 @@ public class WorkflowController {
         workflowService.moveStock(commandeId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/uploads/{uploadFile}")
+    public ResponseEntity<Resource> previewFile(@PathVariable String uploadFile) throws IOException {
+
+        Path filePath = Paths.get("uploads").resolve(uploadFile).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String contextType = Files.probeContentType(filePath);
+        if (contextType == null) {
+            contextType = "application/octet-stream";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contextType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + uploadFile + "\"")
+                .body(resource);
+
+    }
+
 }
